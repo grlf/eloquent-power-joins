@@ -12,7 +12,7 @@ class JoinsHelper
 
     protected function __construct()
     {
-
+        $this->joinRelationshipCache = new \WeakMap();
     }
 
     public static function make(): static
@@ -27,7 +27,7 @@ class JoinsHelper
      *
      * @var array
      */
-    private array $joinRelationshipCache = [];
+    private \WeakMap $joinRelationshipCache;
 
     /**
      * Join method map.
@@ -104,7 +104,7 @@ class JoinsHelper
      */
     public function relationshipAlreadyJoined($model, string $relation): bool
     {
-        return isset($this->joinRelationshipCache[spl_object_id($model)][$relation]);
+        return isset($this->joinRelationshipCache[$model][$relation]);
     }
 
     /**
@@ -112,11 +112,14 @@ class JoinsHelper
      */
     public function markRelationshipAsAlreadyJoined($model, string $relation): void
     {
-        $this->joinRelationshipCache[spl_object_id($model)][$relation] = true;
+        if (! $this->joinRelationshipCache->offsetExists($model)) {
+            $this->joinRelationshipCache->offsetSet($model, []);
+        }
+        $this->joinRelationshipCache[$model][$relation] = true;
     }
 
     public function clear(): void
     {
-        $this->joinRelationshipCache = [];
+        $this->joinRelationshipCache = new \WeakMap;
     }
 }
